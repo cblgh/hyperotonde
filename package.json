@@ -1,0 +1,11 @@
+{
+  "name": "rotonde-cli",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "commander": "^2.10.0",
+    "osenv": "^0.1.4",
+    "hyperdrive": "*",
+    "request": "^2.81.0"
+  }
+}
