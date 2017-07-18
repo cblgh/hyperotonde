@@ -1,20 +1,38 @@
 var hyperdrive = require("hyperdrive")
-var archive = hyperdrive("./rotonde-drive")
+var Dat = require("dat-node")
+var archive = hyperdrive("./rotonde-core")
+var hyperdiscovery = require("hyperdiscovery")
 var fs = require("fs")
+var net = require("net")
 
-return new Promise(function(resolve, reject) {
+
+// Dat("./rotonde-drive", function(err, dat) {
+//     if (err) throw err
+//     dat.importFiles()
+//     dat.joinNetwork()
+//     console.log("dat://" + dat.key.toString("hex"))
+//     dat.network.on('connection', function () {
+//         console.log('I connected to someone!')
+//         dat.close()
+//     })
+// })
+var promise = new Promise(function(resolve, reject) {
     fs.readFile("./rotonde.json", function(err, data) {
         if (err) reject(err)
         resolve(JSON.parse(data))
     })
 }).then(function(rotonde) {
-    archive.writeFile("/rotonde.json", JSON.stringify(rotonde), function(err) {
+    archive.writeFile("/index.html", JSON.stringify(rotonde), function(err) {
         if (err) console.log(err)
+    })
+}).then(function() {
+    archive.on("ready", function() {
+        console.log("hyperotonde key", archive.key.toString("hex"))
+        var sw = hyperdiscovery(archive)
     })
 })
 
-archive.on("ready", function() {
-    console.log("your hyperotonde key", archive.key)
-})
+// console.log(archive.replicate())
+//
+//
 
-archive.replicate({live: true})
