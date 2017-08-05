@@ -4,7 +4,6 @@ var hyperdrive = require("hyperdrive")
 var hyperdiscovery = require("hyperdiscovery")
 
 module.exports = init
-
 function init(archiveLocation) {
     var archiveLoaded = false
     var archive = hyperdrive(archiveLocation)
@@ -40,6 +39,13 @@ function init(archiveLocation) {
         }).then(function(rotonde) {
             // write .json version for generic dat access; already stringified here
             return writeFilePromise(rotonde, "/rotonde.json")
+        }).then(function(rotonde) {
+            rotonde = JSON.parse(rotonde)
+            // write the hashbase descriptor
+            var hashbaseDescr = {"title": rotonde.profile.name + "'s Rotonde Portal", 
+                "description": "This is a dat-hosted Rotonde portal belonging to " + rotonde.profile.name + ". Entries: " +
+                rotonde.feed.length + ". Following: " + rotonde.portal.length + ". Visit https://github.com/Rotonde for more information."}
+            return writeFilePromise(JSON.stringify(hashbaseDescr), "/dat.json")
         }).catch(function(err) {
             console.error("error saving file to dat archive")
             console.error(err)

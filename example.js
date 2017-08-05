@@ -14,4 +14,4 @@ setTimeout(function() {
     console.log("closing")
     // close it (and don't call any methods again after closing; it won't end well)
     rotondeArchive.close()
-}, 1000)
+}, 80000)
