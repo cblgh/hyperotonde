@@ -6,10 +6,12 @@ var hyperdiscovery = require("hyperdiscovery")
 module.exports = init
 
 function init(archiveLocation) {
+    var archiveLoaded = false
     var archive = hyperdrive(archiveLocation)
     var sw
     // start sharing archive with other peers on the network
     archive.on("ready", function() {
+        archiveLoaded = true
         sw = hyperdiscovery(archive)
     })
 
@@ -47,9 +49,13 @@ function init(archiveLocation) {
 
     function key() {
         return new Promise(function(resolve, reject) {
-            archive.on("ready", function() {
+            if (archiveLoaded) {
                 resolve(archive.key.toString("hex"))
-            })
+            } else {
+                archive.on("ready", function() {
+                    resolve(archive.key.toString("hex"))
+                })
+            }
         })
     }
 
