@@ -1,38 +1,62 @@
-var hyperdrive = require("hyperdrive")
-var Dat = require("dat-node")
-var archive = hyperdrive("./rotonde-core")
-var hyperdiscovery = require("hyperdiscovery")
 var fs = require("fs")
 var net = require("net")
+var hyperdrive = require("hyperdrive")
+var hyperdiscovery = require("hyperdiscovery")
 
+module.exports = init
 
-// Dat("./rotonde-drive", function(err, dat) {
-//     if (err) throw err
-//     dat.importFiles()
-//     dat.joinNetwork()
-//     console.log("dat://" + dat.key.toString("hex"))
-//     dat.network.on('connection', function () {
-//         console.log('I connected to someone!')
-//         dat.close()
-//     })
-// })
-var promise = new Promise(function(resolve, reject) {
-    fs.readFile("./rotonde.json", function(err, data) {
-        if (err) reject(err)
-        resolve(JSON.parse(data))
-    })
-}).then(function(rotonde) {
-    archive.writeFile("/index.html", JSON.stringify(rotonde), function(err) {
-        if (err) console.log(err)
-    })
-}).then(function() {
+function init(archiveLocation) {
+    var archive = hyperdrive(archiveLocation)
+    var sw
+    // start sharing archive with other peers on the network
     archive.on("ready", function() {
-        console.log("hyperotonde key", archive.key.toString("hex"))
-        var sw = hyperdiscovery(archive)
+        sw = hyperdiscovery(archive)
     })
-})
 
-// console.log(archive.replicate())
-//
-//
+    function writeFilePromise(data, filename) {
+        return new Promise(function(resolve, reject) {
+            archive.writeFile(filename, data, function(err) {
+                if (err) reject(err)
+                resolve(data)
+            })
+        })
+    }
 
+    function save(file) {
+        return new Promise(function(resolve, reject) {
+            fs.readFile(file, function(err, data) {
+                if (err) reject(err)
+                resolve(JSON.parse(data))
+            })
+        }).catch(function(err) {
+            console.error("error reading file for dat archive")
+            console.error(err)
+            process.exit()
+        }).then(function(rotonde) {
+            // write .html version for easy access via http:// on hashbase
+            return writeFilePromise(JSON.stringify(rotonde), "/index.html")
+        }).then(function(rotonde) {
+            // write .json version for generic dat access; already stringified here
+            return writeFilePromise(rotonde, "/rotonde.json")
+        }).catch(function(err) {
+            console.error("error saving file to dat archive")
+            console.error(err)
+            process.exit()
+        })
+    }
+
+    function key() {
+        return new Promise(function(resolve, reject) {
+            archive.on("ready", function() {
+                resolve(archive.key.toString("hex"))
+            })
+        })
+    }
+
+    function close() {
+        sw.close()
+        archive.close()
+    }
+
+    return {archive: archive, save: save, key: key, close: close}
+}
