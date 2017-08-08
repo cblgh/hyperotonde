@@ -1,5 +1,4 @@
 var fs = require("fs")
-var net = require("net")
 var hyperdrive = require("hyperdrive")
 var hyperdiscovery = require("hyperdiscovery")
 
