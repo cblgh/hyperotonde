@@ -26,8 +26,18 @@ function init(archiveLocation) {
 
     // adds a new file to the archive. used for adding media
     function add(file) {
-        fs.readFile(file, function(data) {
+        return new Promise(function(resolve, reject) {
+            fs.readFile(file, function(err, data) {
+                if (err) { reject(err) }
+                resolve(data)
+            })
+        })
+        .then(function(data) {
             return writeFilePromise(data, "/" + path.basename(file))
+        })
+        .catch(function(err) {
+            console.error(err)
+            return err
         })
     }
 
@@ -38,24 +48,29 @@ function init(archiveLocation) {
                 if (err) reject(err)
                 resolve(JSON.parse(data))
             })
-        }).catch(function(err) {
+        })
+        .catch(function(err) {
             console.error("error reading file for dat archive")
             console.error(err)
             process.exit()
-        }).then(function(rotonde) {
+        })
+        .then(function(rotonde) {
             // write .html version for easy access via http:// on hashbase
             return writeFilePromise(JSON.stringify(rotonde), "/index.html")
-        }).then(function(rotonde) {
+        })
+        .then(function(rotonde) {
             // write .json version for generic dat access; already stringified here
             return writeFilePromise(rotonde, "/rotonde.json")
-        }).then(function(rotonde) {
+        })
+        .then(function(rotonde) {
             rotonde = JSON.parse(rotonde)
             // write the hashbase descriptor
             var hashbaseDescr = {"title": rotonde.profile.name + "'s Rotonde Portal", 
                 "description": "This is a dat-hosted Rotonde portal belonging to " + rotonde.profile.name + ". Entries: " +
                 rotonde.feed.length + ". Following: " + rotonde.portal.length + ". Visit https://github.com/Rotonde for more information."}
             return writeFilePromise(JSON.stringify(hashbaseDescr), "/dat.json")
-        }).catch(function(err) {
+        })
+        .catch(function(err) {
             console.error("error saving file to dat archive")
             console.error(err)
             process.exit()
