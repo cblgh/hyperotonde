@@ -79,5 +79,5 @@ function init(archiveLocation) {
         archive.close()
     }
 
-    return {archive: archive, save: save, key: key, close: close}
+    return {archive: archive, save: save, key: key, close: close, add: add}
 }
