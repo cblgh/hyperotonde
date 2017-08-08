@@ -1,4 +1,5 @@
 var fs = require("fs")
+var path = require("path")
 var net = require("net")
 var hyperdrive = require("hyperdrive")
 var hyperdiscovery = require("hyperdiscovery")
@@ -23,6 +24,14 @@ function init(archiveLocation) {
         })
     }
 
+    // adds a new file to the archive. used for adding media
+    function add(file) {
+        fs.readFile(file, function(data) {
+            return writeFilePromise(data, "/" + path.basename(file))
+        })
+    }
+
+    // save the json & html versions of the .json data in file
     function save(file) {
         return new Promise(function(resolve, reject) {
             fs.readFile(file, function(err, data) {

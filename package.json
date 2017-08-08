@@ -2,6 +2,7 @@
   "name": "hyperotonde",
   "version": "1.0.0",
   "private": true,
+  "main": "hyperotonde.js",
   "dependencies": {
     "hyperdiscovery": "^6.0.4",
     "hyperdrive": "*"
